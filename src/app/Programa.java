@@ -37,19 +37,36 @@ public class Programa {
             scanner.nextLine();
 
             switch (opcao) {
-                case 1:
-                    try {
-                        System.out.println("Digite o nome do cliente:");
-                        String nome = scanner.nextLine();
-                        System.out.println("Digite o CPF do cliente:");
-                        String cpf = scanner.nextLine();
-                        cliente = new Cliente(cpf, nome);
-                        Persistencia.getInstance().salvarCliente(cliente);
-                    } catch (Exception e) {
-                        System.out.println("Erro ao cadastrar cliente: " + e.getMessage());
+            // Cadastro de um novo cliente.
+            case 1:
+                try {
+                    System.out.println("Digite o nome do cliente (sem números):");
+                    String nome = scanner.nextLine();
+                    
+                    // Validação do nome - não pode conter números
+                    if (nome.matches(".*\\d.*")) {
+                        throw new IllegalArgumentException("O nome não pode conter números.");
                     }
-                    break;
 
+                    System.out.println("Digite o CPF do cliente (apenas números):");
+                    String cpf = scanner.nextLine();
+                    
+                    // Validação do CPF - não pode conter letras
+                    if (cpf.matches(".*[a-zA-Z].*")) {
+                        throw new IllegalArgumentException("O CPF não pode conter letras.");
+                    }
+
+                    cliente = new Cliente(cpf, nome);
+                    Persistencia.getInstance().salvarCliente(cliente);
+                    System.out.println("Cliente cadastrado com sucesso!");
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Erro na validação: " + e.getMessage());
+                } catch (Exception e) {
+                    System.out.println("Erro ao cadastrar cliente: " + e.getMessage());
+                }
+                break;
+
+                // Ele seleciona o cliente, com isso entra no segundo loop para as operações de conta.
                 case 2:
                     try {
                         System.out.println("Insira o CPF do cliente:");
@@ -80,7 +97,8 @@ public class Programa {
                             if (opcaoConta == 0) break;
 
                             switch (opcaoConta) {
-                                case 1:
+                            	// Criação de nova conta    
+                            	case 1:
                                     try {
                                         System.out.println("Escolha o tipo de conta que deseja criar");
                                         System.out.println("1. Conta Poupanca");
@@ -109,12 +127,14 @@ public class Programa {
                                     }
                                     break;
 
+                                 // Exibe todas as contas do cliente
                                 case 2:
                                     for (IConta c : cliente.getContas()) {
                                         System.out.println(c);
                                     }
                                     break;
 
+                                 // Depósito
                                 case 3:
                                     try {
                                         System.out.println("Selecione a conta para depósito:");
@@ -143,6 +163,7 @@ public class Programa {
                                     }
                                     break;
 
+                                // Saque
                                 case 4:
                                     try {
                                         System.out.println("Selecione a conta para saque:");
@@ -169,6 +190,7 @@ public class Programa {
                                     }
                                     break;
 
+                                 // Transferência
                                 case 5:
                                     try {
                                         if (cliente.getContas().size() > 0) {
@@ -196,6 +218,7 @@ public class Programa {
                                                                         
                                                         Persistencia.getInstance().atualizarClienteCadastro(cliente);
                                                          
+                                                     // Atualiza o cliente destino, se necessário
                                                         if (!cliente.getContas().contains(contaDestino)) {
                                                             Cliente clienteDestino = Persistencia.getInstance().localizarClientePorConta(contaDestino);
                                                             if (clienteDestino != null) {
@@ -223,11 +246,12 @@ public class Programa {
                                         System.out.println("Erro desconhecido ao realizar a transferência: " + e.getMessage());
                                     }
                                     break;
-
+                                // Ele mostra o extrato de movimentações da conta.
                                 case 6:
                                     try {
                                         if (cliente.getContas().size() > 0) {
-                                            System.out.println("Selecione a conta para extrato:");
+                                        	// Lista contas para escolha
+                                        	System.out.println("Selecione a conta para extrato:");
                                             for (IConta c : cliente.getContas()) {
                                                 System.out.println(c);
                                             }
@@ -235,7 +259,8 @@ public class Programa {
                                             int contaNumero = scanner.nextInt();
                                             IConta conta = cliente.localizarContaNumero(contaNumero);
                                             if (conta != null) {
-                                                List<RegistroTransacao> transacoes = conta.getTransacoes();
+                                            	// Exibe as transações da conta
+                                            	List<RegistroTransacao> transacoes = conta.getTransacoes();
                                                 if (transacoes != null && !transacoes.isEmpty()) {
                                                     System.out.println("\nExtrato da conta número " + contaNumero + ":");
                                                     System.out.println("Data\t\t\tTipo\t\tValor");
@@ -262,7 +287,8 @@ public class Programa {
                                         System.out.println("Erro ao imprimir extrato: " + e.getMessage());
                                     }
                                     break;
-
+                                    
+                                 // Consulta de saldo    
                                 case 7:
                                     try {
                                         if (cliente.getContas().size() > 0) {
@@ -292,11 +318,12 @@ public class Programa {
                                         System.out.println("Erro ao consultar saldo: " + e.getMessage());
                                     }
                                     break;
-
+                                 // Exibe o balanço entre todas as contas do cliente    
                                 case 8:
                                     cliente.balancoEntreContas();
                                     break;
 
+                                 // Remoção de conta
                                 case 9:
                                     try {
                                         if (cliente.getContas().size() > 0) {
@@ -309,7 +336,7 @@ public class Programa {
                                             int numeroConta1 = scanner.nextInt();
                                             IConta conta3 = cliente.localizarContaNumero(numeroConta1);
                                             if (conta3 != null) {
-                                                // Check if the account balance is zero before allowing removal
+                                            	// Verifica se a conta tem saldo zero antes de remover
                                                 if (conta3.getSaldo().compareTo(BigDecimal.ZERO) == 0) {
                                                     cliente.removerConta(conta3);
                                                     Persistencia.getInstance().atualizarClienteCadastro(cliente);
@@ -345,12 +372,13 @@ public class Programa {
                     Persistencia.getInstance().listarClientes();
                     break;
 
+                // Consulta de cliente por CPF
                 case 4:
                     try {
                         System.out.println("Insira o CPF do cliente:");
                         String cpf = scanner.next();
                         cliente = Persistencia.getInstance().localizarClientePorCPF(cpf);
-
+                     // Ele mostra as informações do cliente e suas contas
                         if (cliente != null) {
                             System.out.println("Cliente encontrado:");
                             System.out.println("Nome: " + cliente.getNome());
@@ -367,6 +395,7 @@ public class Programa {
                     }
                     break;
 
+                    // Remove o cliente, porém verifica se ele tem conta.
                 case 5:
                     try {
                         System.out.println("Insira o CPF do cliente:");
@@ -374,8 +403,14 @@ public class Programa {
                         cliente = Persistencia.getInstance().localizarClientePorCPF(cpf);
 
                         if (cliente != null) {
-                            Persistencia.getInstance().removerCliente(cliente);
-                            System.out.println("Cliente removido com sucesso.");
+                            // Verifica se o cliente possui contas cadastradas
+                            if (cliente.getContas() != null && !cliente.getContas().isEmpty()) {
+                                System.out.println("Não é possível remover o cliente: existem contas cadastradas.");
+                            } else {
+                                // Se não tem contas, pode remover
+                                Persistencia.getInstance().removerCliente(cliente);
+                                System.out.println("Cliente removido com sucesso.");
+                            }
                         } else {
                             System.out.println("Cliente não encontrado.");
                         }

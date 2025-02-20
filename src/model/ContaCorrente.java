@@ -7,6 +7,7 @@ import exception.ContaInexistenteException;
 import exception.SaldoInsuficienteException;
 import exception.ValorInvalidoException;
 
+//Classe que representa uma conta corrente, herdando de ContaBancaria
 public class ContaCorrente extends ContaBancaria {
 
     private static final long serialVersionUID = 1L;
@@ -47,8 +48,8 @@ public class ContaCorrente extends ContaBancaria {
         System.out.println("Transferência realizada com sucesso. Taxa: " + taxa);
     }
 
-	
+	// Método que calcula a tarifa de transferência específica para conta corrente.
     public BigDecimal calcularTarifaTransferencia(BigDecimal valor) {
-        return valor.multiply(new BigDecimal("0.05")); 
+        return valor.multiply(new BigDecimal("0.03")); 
     } 
 }
